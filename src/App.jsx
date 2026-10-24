@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import Crisantemo from './components/Crisantemo';
 
-import tefiiImg from './assets/tefii-recorte.png';
+import tefiiImg from './assets/Tefii 1.png';
 import capuchinosImg from './assets/capuchinos.webp';
 import laurelesImg from './assets/laureles.webp';
 import guardaLaurelSuperiorImg from './assets/guarda-laurel-superior.webp';

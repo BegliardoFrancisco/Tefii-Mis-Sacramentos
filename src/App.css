@@ -473,12 +473,12 @@
 
 .tefii-fg {
   position: absolute;
-  bottom: -1px;
+  bottom: -150px;
   left: 50%;
   z-index: 3;
   width: auto;
   max-width: none;
-  height: min(88%, 300px);
+  height: min(148%, 690px);
   object-fit: contain;
   image-rendering: auto;
   filter: drop-shadow(0 14px 20px rgba(66, 48, 50, 0.16));
