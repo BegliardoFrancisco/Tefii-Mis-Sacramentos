@@ -1,0 +1,32 @@
+.flor-svg {
+  display: block;
+  flex: none;
+  width: var(--tamano-flor, 180px);
+  height: var(--tamano-flor, 180px);
+  overflow: visible;
+}
+
+.flor-svg .petalo-base path {
+  fill: var(--color-petalos-sombra);
+}
+
+.flor-svg .petalo-frente path {
+  fill: var(--color-petalos);
+  stroke: rgba(255, 255, 255, 0.22);
+  stroke-width: 0.6;
+}
+
+.flor-svg .centro-base {
+  fill: var(--color-centro);
+}
+
+.flor-svg .centro-corona {
+  fill: none;
+  stroke: var(--color-centro-detalle);
+  stroke-width: 4;
+  stroke-dasharray: 3 3;
+}
+
+.flor-svg .centro-nucleo {
+  fill: var(--color-centro-detalle);
+}
