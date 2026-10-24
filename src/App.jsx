@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import Crisantemo from './components/Crisantemo';
 
@@ -15,6 +15,31 @@ const WHATSAPP_URL = `https://wa.me/5493512352199?text=${encodeURIComponent(
 
 const MAPS_URL =
   'https://www.google.com/maps/search/?api=1&query=Iglesia%20de%20los%20Capuchinos%2C%20Obispo%20Oro%20y%20Buenos%20Aires%2C%20C%C3%B3rdoba';
+const EVENT_DATE = new Date('2026-11-01T21:00:00-03:00');
+
+const getCountdown = (targetDate) => {
+  const difference = targetDate.getTime() - Date.now();
+
+  if (difference <= 0) {
+    return {
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+      isPast: true,
+    };
+  }
+
+  const totalSeconds = Math.floor(difference / 1000);
+
+  return {
+    days: Math.floor(totalSeconds / 86400),
+    hours: Math.floor((totalSeconds % 86400) / 3600),
+    minutes: Math.floor((totalSeconds % 3600) / 60),
+    seconds: totalSeconds % 60,
+    isPast: false,
+  };
+};
 
 const PHOTO_FLOWERS = [
   {
@@ -160,6 +185,15 @@ function WhatsAppIcon() {
 
 function App() {
   const cardRef = useRef(null);
+  const [countdown, setCountdown] = useState(() => getCountdown(EVENT_DATE));
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setCountdown(getCountdown(EVENT_DATE));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const card = cardRef.current;
@@ -526,9 +560,37 @@ function App() {
             </div>
 
             <div
-              className="event-details"
+              className="countdown-box"
               data-reveal
               style={{ '--reveal-delay': '180ms' }}
+            >
+              <p className="countdown-label">Cuenta regresiva</p>
+              <div className="countdown-grid" aria-live="polite">
+                {[
+                  { label: 'Días', value: countdown.days },
+                  { label: 'Horas', value: countdown.hours },
+                  { label: 'Min', value: countdown.minutes },
+                  { label: 'Seg', value: countdown.seconds },
+                ].map(({ label, value }) => (
+                  <div className="countdown-unit" key={label}>
+                    <span className="countdown-value">
+                      {String(value).padStart(2, '0')}
+                    </span>
+                    <span className="countdown-tag">{label}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="countdown-status">
+                {countdown.isPast
+                  ? '¡La celebración ya comenzó!'
+                  : 'Falta poco para compartir este momento especial.'}
+              </p>
+            </div>
+
+            <div
+              className="event-details"
+              data-reveal
+              style={{ '--reveal-delay': '220ms' }}
             >
               <div className="detail-card">
                 <span className="detail-icon" aria-hidden="true">

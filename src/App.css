@@ -632,6 +632,61 @@
   z-index: 2;
 }
 
+.countdown-box {
+  padding: 16px 18px 14px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(244, 234, 235, 0.74));
+  border: 1px solid rgba(228, 197, 203, 0.9);
+  border-radius: 18px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.countdown-label {
+  margin: 0 0 12px;
+  color: var(--verde);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.countdown-unit {
+  display: grid;
+  gap: 4px;
+  padding: 10px 8px 8px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.56);
+  border: 1px solid rgba(213, 178, 183, 0.75);
+  border-radius: 14px;
+}
+
+.countdown-value {
+  color: var(--verde);
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.countdown-tag {
+  color: var(--tenue);
+  font-size: 0.61rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.countdown-status {
+  margin: 12px 0 0;
+  color: var(--rosa-texto);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
 .event-details {
   display: grid;
   grid-template-columns: 1fr;
