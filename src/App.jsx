@@ -5,6 +5,9 @@ import Crisantemo from './components/Crisantemo';
 import tefiiImg from './assets/tefii-recorte.png';
 import capuchinosImg from './assets/capuchinos.webp';
 import laurelesImg from './assets/laureles.webp';
+import guardaLaurelSuperiorImg from './assets/guarda-laurel-superior.webp';
+import guardaLaurelInferiorImg from './assets/guarda-laurel-inferior.webp';
+import palomaImg from './assets/paloma.png';
 
 const WHATSAPP_URL = `https://wa.me/5493512352199?text=${encodeURIComponent(
   'Confirmo mi asistencia',
@@ -162,9 +165,17 @@ function App() {
     const card = cardRef.current;
     if (!card) return undefined;
 
-    const elementos = Array.from(card.querySelectorAll('[data-reveal]'));
+    const secciones = Array.from(card.querySelectorAll('.story-section'));
+    const flores = Array.from(card.querySelectorAll('.card-flower'));
+
     const mostrarTodo = () => {
-      elementos.forEach((elemento) => elemento.classList.add('is-visible'));
+      secciones.forEach((seccion) => {
+        seccion.classList.add('is-visible');
+        seccion
+          .querySelectorAll('[data-reveal]')
+          .forEach((elemento) => elemento.classList.add('is-visible'));
+      });
+      flores.forEach((flor) => flor.classList.add('is-visible'));
     };
 
     const prefiereMenosMovimiento = window.matchMedia(
@@ -181,16 +192,171 @@ function App() {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('is-visible');
+
+            if (entry.target.classList.contains('story-section')) {
+              entry.target
+                .querySelectorAll('[data-reveal]')
+                .forEach((elemento) => elemento.classList.add('is-visible'));
+            }
+
             observer.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.1, rootMargin: '0px 0px 36px 0px' },
+      { threshold: 0.5 },
     );
 
-    elementos.forEach((elemento) => observer.observe(elemento));
+    [...secciones, ...flores].forEach((elemento) =>
+      observer.observe(elemento),
+    );
 
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return undefined;
+
+    const secciones = Array.from(card.querySelectorAll('.story-section'));
+    if (secciones.length < 2) return undefined;
+
+    const menosMovimiento = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    );
+    const pantallaBaja = window.matchMedia('(max-height: 560px)');
+    const puedeNavegar = () =>
+      !menosMovimiento.matches && !pantallaBaja.matches;
+
+    const duracionScroll = 820;
+    const silencioRueda = 160;
+    let bloqueadoHasta = 0;
+    let desbloqueoTimer;
+
+    const mantenerBloqueo = (ms) => {
+      bloqueadoHasta = Math.max(bloqueadoHasta, performance.now() + ms);
+      window.clearTimeout(desbloqueoTimer);
+      const espera = Math.max(0, bloqueadoHasta - performance.now());
+      desbloqueoTimer = window.setTimeout(() => {
+        if (performance.now() < bloqueadoHasta) {
+          mantenerBloqueo(bloqueadoHasta - performance.now());
+        }
+      }, espera + 20);
+    };
+
+    const estaBloqueado = () => performance.now() < bloqueadoHasta;
+
+    const indiceActual = () =>
+      secciones.reduce(
+        (mejor, seccion, indice) => {
+          const distancia = Math.abs(seccion.getBoundingClientRect().top);
+          return distancia < mejor.distancia ? { indice, distancia } : mejor;
+        },
+        { indice: 0, distancia: Number.POSITIVE_INFINITY },
+      ).indice;
+
+    const navegar = (direccion) => {
+      const actual = indiceActual();
+      const destino = Math.min(
+        secciones.length - 1,
+        Math.max(0, actual + direccion),
+      );
+
+      if (destino === actual) return false;
+
+      const seccion = secciones[destino];
+      const top = seccion.getBoundingClientRect().top + window.scrollY;
+
+      window.scrollTo({ top, behavior: 'smooth' });
+      return true;
+    };
+
+    const onWheel = (event) => {
+      if (!puedeNavegar() || event.ctrlKey) return;
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      if (Math.abs(event.deltaY) < 2) return;
+
+      event.preventDefault();
+
+      if (estaBloqueado()) {
+        mantenerBloqueo(silencioRueda);
+        return;
+      }
+
+      if (navegar(event.deltaY > 0 ? 1 : -1)) {
+        mantenerBloqueo(duracionScroll);
+      }
+    };
+
+    let touchStartY = null;
+    let touchStartX = null;
+    let touchActivo = false;
+
+    const onTouchStart = (event) => {
+      if (!puedeNavegar() || event.touches.length !== 1) {
+        touchStartY = null;
+        return;
+      }
+
+      touchStartY = event.touches[0].clientY;
+      touchStartX = event.touches[0].clientX;
+      touchActivo = false;
+    };
+
+    const onTouchMove = (event) => {
+      if (!puedeNavegar() || touchStartY === null) return;
+
+      if (event.touches.length !== 1) {
+        touchStartY = null;
+        return;
+      }
+
+      const deltaY = touchStartY - event.touches[0].clientY;
+      const deltaX = touchStartX - event.touches[0].clientX;
+
+      if (Math.abs(deltaY) < 24 || Math.abs(deltaY) <= Math.abs(deltaX) * 1.1) {
+        return;
+      }
+
+      if (!touchActivo) {
+        touchActivo = true;
+
+        if (estaBloqueado()) {
+          event.preventDefault();
+          mantenerBloqueo(silencioRueda);
+          return;
+        }
+
+        event.preventDefault();
+
+        if (navegar(deltaY > 0 ? 1 : -1)) {
+          mantenerBloqueo(duracionScroll);
+        }
+        return;
+      }
+
+      event.preventDefault();
+    };
+
+    const onTouchEnd = () => {
+      touchStartY = null;
+      touchStartX = null;
+      touchActivo = false;
+    };
+
+    window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', onTouchEnd);
+    window.addEventListener('touchcancel', onTouchEnd);
+
+    return () => {
+      window.clearTimeout(desbloqueoTimer);
+      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('touchcancel', onTouchEnd);
+    };
   }, []);
 
   return (
@@ -249,174 +415,297 @@ function App() {
         </div>
 
         <div className="card-content">
-          <header
-            className="header-section"
-            data-reveal
-            style={{ '--reveal-delay': '40ms' }}
+          <section
+            className="story-section story-section--intro"
+            aria-labelledby="main-title"
           >
-            <span className="subtitle-tag">Invitación especial</span>
-            <h1 className="main-title">Mi Comunión</h1>
-            <p className="sub-title">y Confirmación</p>
-          </header>
-
-          <div
-            className="illustration-stage"
-            data-reveal
-            style={{ '--reveal-delay': '90ms' }}
-          >
-            <div className="arch-wrap">
-              <div className="arch-frame">
-                <img
-                  src={capuchinosImg}
-                  alt=""
-                  className="church-bg"
-                  width="900"
-                  height="1125"
-                  loading="eager"
-                />
-
-                <img
-                  src={tefiiImg}
-                  alt="Tefii sonriendo con un enterito blanco"
-                  className="tefii-fg"
-                  loading="eager"
-                />
-              </div>
-            </div>
-
-            {PHOTO_FLOWERS.map((flor) => (
-              <Crisantemo
-                key={flor.id}
-                className={`arch-flower arch-flower--${flor.id}`}
-                paleta={flor.palette}
-                size={flor.size}
-                style={{
-                  '--giro': `${flor.rotation}deg`,
-                  '--opacidad': flor.opacity,
-                }}
+            <div
+              className="dove-wrap"
+              data-reveal
+              style={{ '--reveal-delay': '20ms' }}
+            >
+              <img
+                src={palomaImg}
+                alt="Paloma con una corona de olivo"
+                className="dove-image"
+                width="677"
+                height="369"
+                loading="eager"
               />
-            ))}
-          </div>
+            </div>
+
+            <header
+              className="header-section"
+              data-reveal
+              style={{ '--reveal-delay': '80ms' }}
+            >
+              <span className="subtitle-tag">Invitación especial</span>
+              <h1 className="main-title" id="main-title">
+                Mi Comunión
+              </h1>
+              <p className="sub-title">y Confirmación</p>
+            </header>
+
+            <div className="scroll-cue" aria-hidden="true">
+              <span className="scroll-cue__text">Deslizá</span>
+              <span className="scroll-cue__line" />
+            </div>
+          </section>
 
           <section
-            className="name-block"
+            className="story-section story-section--photo"
             aria-labelledby="protagonist-name"
-            data-reveal
-            style={{ '--reveal-delay': '150ms' }}
           >
-            <h2 className="protagonist-name" id="protagonist-name">
-              Tefii
-            </h2>
-            <p className="invite-text">
-              Te invito a compartir conmigo este día tan especial y lleno de
-              fe.
-            </p>
-          </section>
+            <div
+              className="illustration-stage"
+              data-reveal
+              style={{ '--reveal-delay': '80ms' }}
+            >
+              <div className="arch-wrap">
+                <div className="arch-frame">
+                  <img
+                    src={capuchinosImg}
+                    alt=""
+                    className="church-bg"
+                    width="900"
+                    height="1125"
+                    loading="eager"
+                  />
 
-          <div
-            className="section-divider"
-            data-reveal
-            style={{ '--reveal-delay': '200ms' }}
-            aria-hidden="true"
-          >
-            <span className="section-divider__line" />
-            <Crisantemo className="section-flower" paleta="rosa" size={26} />
-            <span className="section-divider__line" />
-          </div>
-
-          <section
-            className="event-details"
-            aria-label="Fecha y lugar"
-            data-reveal
-            style={{ '--reveal-delay': '260ms' }}
-          >
-            <div className="detail-card">
-              <span className="detail-icon" aria-hidden="true">
-                <CalendarIcon />
-              </span>
-              <div className="detail-copy">
-                <p className="detail-label">Cuándo</p>
-                <p className="detail-value">Domingo 1 de noviembre</p>
+                  <img
+                    src={tefiiImg}
+                    alt="Tefii sonriendo con un enterito blanco"
+                    className="tefii-fg"
+                    loading="eager"
+                  />
+                </div>
               </div>
+
+              {PHOTO_FLOWERS.map((flor) => (
+                <Crisantemo
+                  key={flor.id}
+                  className={`arch-flower arch-flower--${flor.id}`}
+                  paleta={flor.palette}
+                  size={flor.size}
+                  style={{
+                    '--giro': `${flor.rotation}deg`,
+                    '--opacidad': flor.opacity,
+                  }}
+                />
+              ))}
             </div>
 
-            <div className="detail-card">
-              <span className="detail-icon" aria-hidden="true">
-                <LocationIcon />
-              </span>
-              <div className="detail-copy">
-                <p className="detail-label">Dónde</p>
-                <p className="detail-value">Iglesia de los Capuchinos</p>
-                <p className="detail-sub">Obispo Oro y Buenos Aires</p>
-                <a
-                  className="map-button"
-                  href={MAPS_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <MapIcon />
-                  Ver ubicación en Google Maps
-                  <span className="sr-only"> (se abre en una pestaña nueva)</span>
-                </a>
-              </div>
-            </div>
-          </section>
-
-          <section
-            className="agape-card"
-            aria-labelledby="agape-title"
-            data-reveal
-            style={{ '--reveal-delay': '320ms' }}
-          >
-            <span className="agape-icon" aria-hidden="true">
-              <UtensilsIcon />
-            </span>
-            <div>
-              <p className="detail-label">Después de la Misa</p>
-              <h3 className="agape-title" id="agape-title">
-                Ágape y cena a la canasta
-              </h3>
-              <p className="agape-text">
-                Al terminar la Misa se realizará un ágape: cena a la canasta
-                con los invitados.
+            <div
+              className="name-block"
+              data-reveal
+              style={{ '--reveal-delay': '220ms' }}
+            >
+              <h2 className="protagonist-name" id="protagonist-name">
+                Tefii
+              </h2>
+              <p className="invite-text">
+                Te invito a compartir conmigo este día tan especial y lleno de
+                fe.
               </p>
             </div>
           </section>
 
           <section
-            className="rsvp-box"
-            aria-labelledby="rsvp-title"
-            data-reveal
-            style={{ '--reveal-delay': '380ms' }}
+            className="story-section story-section--details"
+            aria-label="Cuándo y dónde"
           >
-            <h3 className="rsvp-title" id="rsvp-title">
-              ¿Me acompañás?
-            </h3>
-            <p className="rsvp-subtitle">
-              Confirmá tu asistencia con un mensaje directo a Tefii.
-            </p>
-            <a
-              className="rsvp-button"
-              href={WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+            <div
+              className="section-divider"
+              data-reveal
+              style={{ '--reveal-delay': '80ms' }}
+              aria-hidden="true"
             >
-              <WhatsAppIcon />
-              Confirmar asistencia
-              <span className="sr-only"> por WhatsApp</span>
-            </a>
-            <p className="rsvp-note">
-              Se abre WhatsApp con el mensaje “Confirmo mi asistencia”.
-            </p>
+              <span className="section-divider__line" />
+              <Crisantemo className="section-flower" paleta="rosa" size={26} />
+              <span className="section-divider__line" />
+            </div>
+
+            <div
+              className="event-details"
+              data-reveal
+              style={{ '--reveal-delay': '180ms' }}
+            >
+              <div className="detail-card">
+                <span className="detail-icon" aria-hidden="true">
+                  <CalendarIcon />
+                </span>
+                <div className="detail-copy">
+                  <p className="detail-label">Cuándo</p>
+                  <p className="detail-value">Domingo 1 de noviembre</p>
+                  <p className="detail-time">A las 21 hs</p>
+                </div>
+              </div>
+
+              <div className="detail-card">
+                <span className="detail-icon" aria-hidden="true">
+                  <LocationIcon />
+                </span>
+                <div className="detail-copy">
+                  <p className="detail-label">Dónde</p>
+                  <p className="detail-value">Iglesia de los Capuchinos</p>
+                  <p className="detail-sub">Obispo Oro y Buenos Aires</p>
+                  <a
+                    className="map-button"
+                    href={MAPS_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MapIcon />
+                    Ver ubicación en Google Maps
+                    <span className="sr-only">
+                      {' '}(se abre en una pestaña nueva)
+                    </span>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="church-detail"
+              data-reveal
+              style={{ '--reveal-delay': '300ms' }}
+              aria-hidden="true"
+            >
+              <img
+                src={capuchinosImg}
+                alt=""
+                width="900"
+                height="1125"
+                loading="lazy"
+              />
+            </div>
           </section>
 
-          <p
-            className="footer-note"
-            data-reveal
-            style={{ '--reveal-delay': '440ms' }}
+          <section
+            className="story-section story-section--celebration"
+            aria-label="Ágape y confirmación"
           >
-            ¡Te espero!
-          </p>
+            <div
+              className="celebration-guard celebration-guard--top"
+              data-reveal
+              style={{ '--reveal-delay': '80ms' }}
+              aria-hidden="true"
+            >
+              <img
+                src={guardaLaurelSuperiorImg}
+                alt=""
+                className="celebration-guard__laurel"
+                width="597"
+                height="276"
+              />
+              <Crisantemo
+                className="guard-flower guard-flower--top-center"
+                paleta="rosa"
+                size="clamp(20px, 4.8vw, 30px)"
+              />
+              <Crisantemo
+                className="guard-flower guard-flower--top-left"
+                paleta="lavanda"
+                size="clamp(13px, 3.4vw, 18px)"
+              />
+              <Crisantemo
+                className="guard-flower guard-flower--top-right"
+                paleta="celeste"
+                size="clamp(12px, 3.2vw, 17px)"
+              />
+            </div>
+
+            <section
+              className="agape-card"
+              aria-labelledby="agape-title"
+              data-reveal
+              style={{ '--reveal-delay': '170ms' }}
+            >
+              <span className="agape-icon" aria-hidden="true">
+                <UtensilsIcon />
+              </span>
+              <div>
+                <p className="detail-label">Después de la Misa</p>
+                <h3 className="agape-title" id="agape-title">
+                  Ágape y cena a la canasta
+                </h3>
+                <p className="agape-text">
+                  Al terminar la Misa se realizará un ágape: cena a la canasta
+                  con los invitados.
+                </p>
+              </div>
+            </section>
+
+            <section
+              className="rsvp-box"
+              aria-labelledby="rsvp-title"
+              data-reveal
+              style={{ '--reveal-delay': '260ms' }}
+            >
+              <h3 className="rsvp-title" id="rsvp-title">
+                ¿Me acompañás?
+              </h3>
+              <p className="rsvp-subtitle">
+                Confirmá tu asistencia con un mensaje directo a Tefii.
+              </p>
+              <a
+                className="rsvp-button"
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <WhatsAppIcon />
+                Confirmar asistencia
+                <span className="sr-only"> por WhatsApp</span>
+              </a>
+              <p className="rsvp-note">
+                Se abre WhatsApp con el mensaje “Confirmo mi asistencia”.
+              </p>
+            </section>
+
+            <div
+              className="celebration-guard celebration-guard--bottom"
+              data-reveal
+              style={{ '--reveal-delay': '340ms' }}
+              aria-hidden="true"
+            >
+              <img
+                src={guardaLaurelInferiorImg}
+                alt=""
+                className="celebration-guard__laurel"
+                width="597"
+                height="294"
+              />
+              <Crisantemo
+                className="guard-flower guard-flower--bottom-center"
+                paleta="rosa"
+                size="clamp(18px, 4.4vw, 26px)"
+              />
+              <Crisantemo
+                className="guard-flower guard-flower--bottom-left"
+                paleta="celeste"
+                size="clamp(12px, 3.2vw, 17px)"
+              />
+              <Crisantemo
+                className="guard-flower guard-flower--bottom-right"
+                paleta="lavanda"
+                size="clamp(13px, 3.4vw, 18px)"
+              />
+            </div>
+          </section>
+
+          <section
+            className="story-section story-section--closing"
+            aria-label="Te espero"
+          >
+            <p
+              className="footer-note"
+              data-reveal
+              style={{ '--reveal-delay': '100ms' }}
+            >
+              ¡Te espero!
+            </p>
+          </section>
         </div>
       </main>
     </div>

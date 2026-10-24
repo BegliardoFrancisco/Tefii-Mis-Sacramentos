@@ -5,7 +5,7 @@
   min-height: 100svh;
   place-items: center;
   padding: clamp(12px, 3.5vw, 34px) clamp(12px, 3.5vw, 32px);
-  overflow: hidden;
+  overflow: clip;
   isolation: isolate;
   background:
     radial-gradient(
@@ -62,9 +62,8 @@
   z-index: 1;
   width: 100%;
   max-width: 620px;
-  padding: clamp(46px, 8vw, 62px) clamp(20px, 5.5vw, 48px)
-    clamp(34px, 6vw, 48px);
-  overflow: hidden;
+  padding: 0 clamp(20px, 5.5vw, 48px);
+  overflow: clip;
   text-align: center;
   background: linear-gradient(180deg, #fffdfb 0%, #fffdfb 72%, #fdfaf7 100%);
   border: 1px solid rgba(229, 225, 221, 0.9);
@@ -74,7 +73,7 @@
     0 12px 32px rgba(86, 63, 66, 0.07),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
   isolation: isolate;
-  animation: card-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: card-fade 0.8s ease both;
 }
 
 .invitation-card::after {
@@ -87,15 +86,13 @@
   pointer-events: none;
 }
 
-@keyframes card-rise {
+@keyframes card-fade {
   from {
     opacity: 0;
-    transform: translateY(18px) scale(0.992);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 
@@ -111,6 +108,77 @@
 .card-content {
   position: relative;
   z-index: 3;
+}
+
+.story-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding-block: clamp(32px, 6svh, 64px);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.story-section--photo {
+  gap: clamp(16px, 2.8svh, 26px);
+}
+
+.story-section--details,
+.story-section--celebration {
+  gap: clamp(18px, 3.2svh, 30px);
+}
+
+.story-section--closing {
+  scroll-snap-align: end;
+  background: radial-gradient(
+    ellipse at 50% 52%,
+    rgba(246, 231, 232, 0.5) 0%,
+    rgba(246, 231, 232, 0) 62%
+  );
+}
+
+.scroll-cue {
+  position: absolute;
+  bottom: clamp(28px, 5.5svh, 48px);
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  color: var(--rosa-texto);
+  opacity: 0.72;
+  transform: translateX(-50%);
+}
+
+.scroll-cue__text {
+  font-size: clamp(0.52rem, 1.7vw, 0.62rem);
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.scroll-cue__line {
+  width: 1px;
+  height: clamp(22px, 4svh, 34px);
+  background: linear-gradient(180deg, var(--rosa-polvo), transparent);
+  transform-origin: top;
+  animation: cue-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes cue-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scaleY(0.65);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: scaleY(1);
+  }
 }
 
 .laurel-corner {
@@ -178,13 +246,13 @@
 }
 
 .flor--bottom-left {
-  bottom: -16px;
-  left: -12px;
+  bottom: -6px;
+  left: -8px;
 }
 
 .flor--bottom-right {
-  right: -16px;
-  bottom: -14px;
+  right: -8px;
+  bottom: -6px;
 }
 
 [data-reveal] {
@@ -199,6 +267,18 @@
 [data-reveal].is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+.dove-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.dove-image {
+  width: min(100%, 400px);
+  height: auto;
+  filter: drop-shadow(0 12px 18px rgba(85, 62, 66, 0.12));
 }
 
 .header-section {
@@ -241,7 +321,6 @@
   position: relative;
   display: flex;
   justify-content: center;
-  margin-top: clamp(16px, 4vw, 24px);
 }
 
 .arch-wrap {
@@ -414,7 +493,7 @@
 }
 
 .name-block {
-  margin-top: clamp(16px, 3vw, 22px);
+  margin: 0;
 }
 
 .protagonist-name {
@@ -444,7 +523,7 @@
   justify-content: center;
   gap: 12px;
   width: min(210px, 64%);
-  margin: clamp(18px, 4vw, 24px) auto;
+  margin: 0 auto;
 }
 
 .section-divider__line {
@@ -461,11 +540,102 @@
   opacity: 0.95;
 }
 
+.church-detail {
+  width: min(
+    clamp(228px, 57vw, 370px),
+    max(104px, calc(70.4svh - 300px))
+  );
+  margin: clamp(2px, 0.8svh, 8px) auto 0;
+  filter: drop-shadow(0 10px 24px rgba(85, 62, 66, 0.09));
+}
+
+.church-detail img {
+  display: block;
+  width: 100%;
+  height: auto;
+  opacity: 0.68;
+  user-select: none;
+}
+
+.celebration-guard {
+  position: absolute;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  width: min(86%, 380px);
+  margin-inline: auto;
+  pointer-events: none;
+}
+
+.celebration-guard--top {
+  top: clamp(14px, 2.4svh, 28px);
+}
+
+.celebration-guard--bottom {
+  bottom: clamp(14px, 2.4svh, 28px);
+}
+
+.celebration-guard__laurel {
+  display: block;
+  width: 100%;
+  height: auto;
+  mix-blend-mode: multiply;
+  opacity: 0.42;
+  user-select: none;
+}
+
+.guard-flower.flor-svg {
+  position: absolute;
+  z-index: 2;
+  filter: drop-shadow(0 4px 7px rgba(85, 62, 66, 0.1));
+}
+
+.guard-flower--top-center {
+  top: -2%;
+  left: 50%;
+  transform: translateX(-50%) rotate(-8deg);
+}
+
+.guard-flower--top-left {
+  bottom: 0;
+  left: 8%;
+  transform: rotate(12deg);
+}
+
+.guard-flower--top-right {
+  right: 8%;
+  bottom: 0;
+  transform: rotate(-10deg);
+}
+
+.guard-flower--bottom-center {
+  bottom: -2%;
+  left: 50%;
+  transform: translateX(-50%) rotate(7deg);
+}
+
+.guard-flower--bottom-left {
+  top: 0;
+  left: 8%;
+  transform: rotate(-12deg);
+}
+
+.guard-flower--bottom-right {
+  top: 0;
+  right: 8%;
+  transform: rotate(10deg);
+}
+
+.story-section--celebration > .agape-card,
+.story-section--celebration > .rsvp-box {
+  position: relative;
+  z-index: 2;
+}
+
 .event-details {
   display: grid;
   grid-template-columns: 1fr;
   gap: 11px;
-  margin-bottom: 18px;
 }
 
 .detail-card {
@@ -535,6 +705,15 @@
   text-wrap: pretty;
 }
 
+.detail-time {
+  margin: 5px 0 0;
+  color: var(--verde);
+  font-size: clamp(0.76rem, 2.2vw, 0.82rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+}
+
 .detail-sub {
   margin: 4px 0 0;
   color: var(--tenue);
@@ -585,7 +764,6 @@
   gap: 13px;
   align-items: flex-start;
   padding: 16px;
-  margin-bottom: 18px;
   text-align: left;
   background: linear-gradient(135deg, var(--rosa-suave) 0%, #fbf7f4 100%);
   border: 1px solid #f0dade;
@@ -697,19 +875,23 @@
 }
 
 .footer-note {
-  margin: clamp(20px, 4vw, 28px) 0 0;
+  position: relative;
+  z-index: 1;
+  margin: 0;
   color: var(--verde);
   font-family: var(--font-display);
-  font-size: clamp(1.2rem, 3.8vw, 1.4rem);
+  font-size: clamp(2rem, 7.5vw, 3.1rem);
   font-style: italic;
-  letter-spacing: 0.02em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1;
 }
 
 .footer-note::before {
   display: block;
-  width: 42px;
+  width: 54px;
   height: 1px;
-  margin: 0 auto 9px;
+  margin: 0 auto 14px;
   background: var(--rosa-polvo);
   content: '';
 }
@@ -764,6 +946,49 @@
   }
 }
 
+@media (max-height: 700px) {
+  .celebration-guard {
+    width: min(74%, 340px);
+  }
+
+  .celebration-guard--top {
+    top: 12px;
+  }
+
+  .celebration-guard--bottom {
+    bottom: 12px;
+  }
+}
+
+@media (max-height: 620px) {
+  .celebration-guard {
+    width: min(60%, 300px);
+  }
+
+  .celebration-guard--top {
+    top: 10px;
+  }
+
+  .celebration-guard--bottom {
+    bottom: 10px;
+  }
+
+  .guard-flower.flor-svg {
+    display: none;
+  }
+}
+
+@media (max-height: 560px) {
+  .story-section {
+    min-height: auto;
+  }
+
+  .scroll-cue,
+  .celebration-guard {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .invitation-card,
   .arch-frame,
@@ -795,5 +1020,11 @@
   .arch-flower.flor-svg {
     opacity: var(--opacidad, 0.45) !important;
     transform: rotate(var(--giro, 0deg)) scale(1) !important;
+  }
+
+  .scroll-cue__line {
+    animation: none;
+    opacity: 0.65;
+    transform: none;
   }
 }

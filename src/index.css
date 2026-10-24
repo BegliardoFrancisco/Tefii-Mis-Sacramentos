@@ -32,6 +32,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
 }
 
 body {
@@ -80,8 +81,15 @@ select {
   min-height: 100svh;
 }
 
+@media (max-height: 560px) {
+  html {
+    scroll-snap-type: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+    scroll-snap-type: none;
   }
 }
