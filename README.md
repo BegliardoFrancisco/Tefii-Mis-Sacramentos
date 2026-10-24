@@ -1,16 +1,22 @@
-# React + Vite
+# Tefii · Mi Comunión y Confirmación
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Invitación web creada con React y Vite.
 
-Currently, two official plugins are available:
+## Desarrollo local
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```sh
+npm ci
+npm run dev
+```
 
-## React Compiler
+## Despliegue en GitHub Pages
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+El workflow [Deploy to GitHub Pages](./.github/workflows/deploy.yml) compila y publica el sitio automáticamente al subir cambios a `main` o `master`. También se puede ejecutar manualmente desde la pestaña **Actions**.
 
-## Expanding the ESLint configuration
+Para habilitarlo en el repositorio:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Abrí **Settings → Pages**.
+2. En **Build and deployment → Source**, seleccioná **GitHub Actions**.
+3. Subí el workflow a la rama `main` o `master` y esperá a que finalice la ejecución.
+
+Vite usa automáticamente el nombre del repositorio como ruta base durante el workflow, de modo que los recursos estáticos funcionen en la URL de GitHub Pages.
